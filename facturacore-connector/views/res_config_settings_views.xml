@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.l10n_co_facturacore</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="90" />
+        <field name="inherit_id" ref="acc/** @odoo-module **/ount.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='audit_trail_setting_container']" position="after">
+                <block title="FacturaCore API" name="l10n_co_facturacore_connector">
+                    <setting string="Credenciales de API"
+                        help="Configure los parámetros de conexión para la API de FacturaCore.">
+                        <div class="content-group">
+                            <div class="mt16">
+                                <label for="facturacore_api_url" string="URL de la API" />
+                                <field name="facturacore_api_url"
+                                    placeholder="https://api.facturacore.com" />
+                            </div>
+                            <div class="mt16">
+                                <label for="facturacore_api_key" string="API Key" />
+                                <field name="facturacore_api_key" password="True" />
+                                <field name="l10n_co_dian_environment" />
+                            </div>
+                        </div>
+                    </setting>
+                    <setting string="Certificado Digital"
+                        help="Detalles del certificado PFX para la firma electrónica.">
+                        <div class="content-group">
+                            <div class="mt16">
+                                <label for="l10n_co_pfx_filename" string="Nombre del archivo PFX" />
+                                <field name="l10n_co_pfx_filename" placeholder="empresa.pfx" />
+                            </div>
+                            <div class="mt16">
+                                <label for="l10n_co_pfx_password" string="Contraseña PFX" />
+                                <field name="l10n_co_pfx_password" password="True" />
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

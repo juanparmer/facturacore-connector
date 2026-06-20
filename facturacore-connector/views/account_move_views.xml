@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_move_form_account" model="ir.ui.view">
+        <field name="name">account.move.view.form.inherit</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="button_check_dian_status_manual"
+                    string="🔄 Verificar Estado DIAN"
+                    type="object"
+                    class="oe_highlight"
+                    invisible="l10n_co_dian_status != 'processing'"
+                    help="Verifica el estado actual de la factura en la API de FacturaCore y la DIAN." />
+            </xpath>
+
+            <xpath expr="//notebook" position="inside">
+                <page string="FacturaCore (DIAN)" name="facturacore_dian_integration">
+                    <group>
+                        <group string="Información de Cola Asíncrona">
+                            <field name="l10n_co_dian_status" widget="badge"
+                                decoration-info="l10n_co_dian_status == 'processing'"
+                                decoration-success="l10n_co_dian_status == 'accepted'"
+                                decoration-danger="l10n_co_dian_status == 'rejected'" />
+                            <field name="l10n_co_cufe" />
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
