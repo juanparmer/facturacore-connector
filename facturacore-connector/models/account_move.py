@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import qrcode
+import io
+import base64
+from pytz import timezone
+
 from odoo import _, fields, models
 from odoo.exceptions import UserError
 
@@ -21,6 +26,8 @@ class AccountMove(models.Model):
     )
 
     l10n_co_cufe = fields.Char(string="CUFE", copy=False, readonly=True)
+    l10n_co_dian_url = fields.Char(string="URL DIAN", copy=False, readonly=True)
+    l10n_co_qr_image = fields.Binary(string="Código QR DIAN", copy=False, readonly=True)
 
     def _build_facturacore_json_payload(self):
         """
@@ -29,7 +36,19 @@ class AccountMove(models.Model):
         adquirente, desglose de impuestos, líneas de factura y resolución.
         """
         self.ensure_one()
-        issue_date_str = fields.Datetime.now().strftime("%Y-%m-%dT%H:%M:%S-05:00")
+        
+        if self.invoice_date:
+            fec_fac = self.invoice_date.strftime("%Y-%m-%d")
+        else:
+            fec_fac = fields.Date.context_today(self).strftime("%Y-%m-%d")
+            
+        hor_fac = self.create_date.astimezone(
+            timezone("America/Bogota")
+        ).strftime("%H:%M:%S-05:00") if self.create_date else "00:00:00-05:00"
+        
+        payment_due_date_str = self.invoice_date_due.strftime("%Y-%m-%d") if self.invoice_date_due else fec_fac
+        
+        issue_date_str = f"{fec_fac}T{hor_fac}"
         invoice_type = "01" if self.move_type == "out_invoice" else "91"
 
         # Agrupar impuestos a nivel de documento
@@ -68,6 +87,8 @@ class AccountMove(models.Model):
             lines_payload.append({
                 "local_id": str(index),
                 "description": line.name or "Producto/Servicio",
+                "note": line.name or "Producto/Servicio",
+                "product_code": line.product_id.default_code or line.product_id.barcode or "0000",
                 "quantity": line.quantity,
                 "price_amount": line.price_unit,
                 "line_extension_amount": line.price_subtotal,
@@ -91,7 +112,9 @@ class AccountMove(models.Model):
                     "range_from": self.company_id.l10n_co_resolution_range_from or 1,
                     "range_to": self.company_id.l10n_co_resolution_range_to or 5000000,
                     "technical_key": self.company_id.l10n_co_technical_key or "fc8eac422eba16e22ffd8c6f94b3f40a6e38162c"
-                }
+                },
+                "payment_means_code": "2" if self.invoice_date_due and self.invoice_date_due > self.invoice_date else "1",
+                "payment_due_date": payment_due_date_str,
             },
             "emitter": {
                 "nit": self.company_id.vat or "900123456-1",
@@ -123,6 +146,8 @@ class AccountMove(models.Model):
                 "subtotal": self.amount_untaxed,
                 "total_taxes": self.amount_tax,
                 "total_payable": self.amount_total,
+                "allowance_total": 0.00,
+                "charge_total": 0.00,
             },
             "taxes": taxes_payload,
             "lines": lines_payload,
@@ -133,6 +158,30 @@ class AccountMove(models.Model):
                 ),
             },
         }
+
+    def _generate_dian_qr(self, cufe):
+        self.ensure_one()
+        env_type = self.company_id.l10n_co_dian_environment
+        base_url = (
+            "https://catalogo-vpfe.dian.gov.co/document/searchqr?documentkey="
+            if env_type == "production"
+            else "https://catalogo-vpfe-hab.dian.gov.co/document/searchqr?documentkey="
+        )
+        url = f"{base_url}{cufe}"
+        
+        qr = qrcode.QRCode(version=1, box_size=4, border=4)
+        qr.add_data(url)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        
+        temp = io.BytesIO()
+        img.save(temp, format="PNG")
+        qr_image = base64.b64encode(temp.getvalue())
+        
+        self.write({
+            "l10n_co_dian_url": url,
+            "l10n_co_qr_image": qr_image
+        })
 
     def button_check_dian_status_manual(self):
         """

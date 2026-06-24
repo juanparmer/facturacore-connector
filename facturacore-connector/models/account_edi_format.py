@@ -179,15 +179,15 @@ class AccountEdiFormat(models.Model):
                                 invoice.write(
                                     {"l10n_co_cufe": api_result.get("cufe")}
                                 )  # CUFE está en el nivel api_result
+                                if hasattr(invoice, "_generate_dian_qr"):
+                                    invoice._generate_dian_qr(api_result.get("cufe"))
 
                         elif dian_status in (
                             "RECHAZADO",
                             "RECHAZADO_SOAP",
-                            "CRITICAL_FAIL",
-                            "ERROR_COMUNICACION",
                             "ERROR_DESCOMPRESION_PARSEO",
                         ):
-                            # Para cualquier fallo definitivo de la DIAN o errores críticos de comunicación
+                            # Para cualquier fallo definitivo de la DIAN o errores críticos de XML
                             error_msg = (
                                 dian_outcome.get("dian_description")
                                 or dian_outcome.get("error_message")
@@ -210,7 +210,7 @@ class AccountEdiFormat(models.Model):
                                 % (
                                     dian_status,
                                     dian_outcome.get("error_message")
-                                    or _("Error desconocido. Reintente."),
+                                    or _("Timeout de lectura o error desconocido. Reintente."),
                                 ),
                                 "blocking_level": "warning",
                             }
@@ -224,11 +224,14 @@ class AccountEdiFormat(models.Model):
                         }
 
                     elif api_status == "ERROR":
-                        invoice.write({"l10n_co_dian_status": "rejected"})
+                        # El worker falló completamente (ej. agotó reintentos por Timeout DIAN)
+                        # Limpiamos el task_id para que Odoo lo vuelva a encolar en el próximo intento
+                        edi_doc.write({"l10n_co_facturacore_task_id": False})
+                        invoice.write({"l10n_co_dian_status": "not_sent"})
                         res[invoice] = {
-                            "error": _("Error en el Worker: %s")
-                            % (res_data.get("message") or _("Error desconocido")),
-                            "blocking_level": "error",
+                            "error": _("Error de conexión DIAN en el Worker (Timeout agotado): %s")
+                            % (res_data.get("message") or _("Revise los logs de la API")),
+                            "blocking_level": "warning",
                         }
                 else:
                     res[invoice] = {

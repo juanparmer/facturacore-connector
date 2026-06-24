@@ -23,6 +23,8 @@
                                 decoration-success="l10n_co_dian_status == 'accepted'"
                                 decoration-danger="l10n_co_dian_status == 'rejected'" />
                             <field name="l10n_co_cufe" />
+                            <field name="l10n_co_dian_url" widget="url" invisible="not l10n_co_dian_url"/>
+                            <field name="l10n_co_qr_image" widget="image" invisible="not l10n_co_qr_image" options="{'size': [150, 150]}"/>
                         </group>
                     </group>
                 </page>
