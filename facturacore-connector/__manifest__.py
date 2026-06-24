@@ -2,7 +2,7 @@
 
 {
     "name": "FacturaCore API - Conector Ligero de Facturación Electrónica",
-    "version": "18.0",
+    "version": "18.0.1.1.1",
     "category": "Accounting/Localizations",
     "summary": "Módulo ligero de extracción de datos contables y conector con FacturaCore API centralizada.",
     "author": "Juan Pablo Arcos Merchán",

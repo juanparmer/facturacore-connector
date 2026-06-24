@@ -23,8 +23,8 @@
                             </div>
                         </div>
                     </setting>
-                    <setting string="Certificado Digital"
-                        help="Detalles del certificado PFX para la firma electrónica.">
+                    <setting string="Certificado Digital y Software"
+                        help="Detalles del certificado PFX y registro de Software DIAN.">
                         <div class="content-group">
                             <div class="mt16">
                                 <label for="l10n_co_pfx_filename" string="Nombre del archivo PFX" />
@@ -33,6 +33,43 @@
                             <div class="mt16">
                                 <label for="l10n_co_pfx_password" string="Contraseña PFX" />
                                 <field name="l10n_co_pfx_password" password="True" />
+                            </div>
+                            <div class="mt16">
+                                <label for="l10n_co_software_id" string="Software ID" />
+                                <field name="l10n_co_software_id" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" />
+                            </div>
+                            <div class="mt16">
+                                <label for="l10n_co_software_pin" string="Software PIN" />
+                                <field name="l10n_co_software_pin" password="True" placeholder="12345" />
+                            </div>
+                        </div>
+                    </setting>
+                    <setting string="Resolución de Facturación DIAN"
+                        help="Datos de la resolución actual autorizada por la DIAN.">
+                        <div class="content-group">
+                            <div class="mt16">
+                                <label for="l10n_co_resolution_number" string="Número Resolución" />
+                                <field name="l10n_co_resolution_number" placeholder="18760000001" />
+                            </div>
+                            <div class="mt16">
+                                <label for="l10n_co_resolution_prefix" string="Prefijo" />
+                                <field name="l10n_co_resolution_prefix" placeholder="SETT" />
+                            </div>
+                            <div class="mt16">
+                                <label for="l10n_co_resolution_date_from" string="Fecha Desde" />
+                                <field name="l10n_co_resolution_date_from" />
+                                <label for="l10n_co_resolution_date_to" string="Fecha Hasta" class="ml-2"/>
+                                <field name="l10n_co_resolution_date_to" />
+                            </div>
+                            <div class="mt16">
+                                <label for="l10n_co_resolution_range_from" string="Rango Desde" />
+                                <field name="l10n_co_resolution_range_from" />
+                                <label for="l10n_co_resolution_range_to" string="Rango Hasta" class="ml-2" />
+                                <field name="l10n_co_resolution_range_to" />
+                            </div>
+                            <div class="mt16">
+                                <label for="l10n_co_technical_key" string="Clave Técnica" />
+                                <field name="l10n_co_technical_key" password="True" />
                             </div>
                         </div>
                     </setting>
